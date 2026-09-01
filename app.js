@@ -531,9 +531,10 @@ function renderUserStatsOrders() {
                     <div style="background: white; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 0.75rem; border-left: 4px solid ${statusColor}; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
                         <div style="display:flex; justify-content:space-between; margin-bottom: 0.5rem; align-items: center;">
                             <strong style="font-size: 1.1rem;">Stol ${o.table}</strong>
-                            <div>
+                            <div style="display:flex; align-items:center;">
                                 <span class="badge" style="background: ${statusColor}; color: white; margin-right: 0.5rem;">${statusText}</span>
-                                <span style="color:var(--success-color); font-weight:bold; font-size: 1.1rem;">$${o.total.toFixed(2)}</span>
+                                <span style="color:var(--success-color); font-weight:bold; font-size: 1.1rem; margin-right: 0.5rem;">$${o.total.toFixed(2)}</span>
+                                <button class="btn icon-btn danger-btn" style="padding: 0.2rem 0.4rem; font-size: 0.8rem; height: auto;" onclick="deleteOrderPermanently('${o.id}')" title="O'chirish"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                         <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0.5rem; line-height: 1.4;">${itemsHtml}</p>
@@ -718,6 +719,23 @@ function checkAudioAlert() {
         previousReadyCount = readyCount;
     }
 }
+
+window.deleteOrderPermanently = async function(orderId) {
+    if(!confirm("Haqiqatan ham bu zakazni butunlay o'chirib tashlamoqchimisiz?")) return;
+    try {
+        const res = await fetch(`${API_BASE}/orders/${orderId}`, { method: 'DELETE' });
+        if(res.ok) {
+            showToast("Zakaz o'chirildi!", "success");
+            await fetchData();
+            renderUserStatsOrders();
+        } else {
+            showToast("Xatolik yuz berdi!", "danger");
+        }
+    } catch(err) {
+        console.error(err);
+        showToast("Tarmoq xatosi", "danger");
+    }
+};
 
 window.updateOrderStatus = async function(orderId, newStatus) {
     const payload = { status: newStatus };

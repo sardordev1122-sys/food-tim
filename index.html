@@ -577,10 +577,10 @@
                 
                 <!-- Filters for Orders -->
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-                    <div class="menu-filters" style="margin: 0;" id="stats-date-filters">
+                    <div class="menu-filters" style="margin: 0; display: flex; gap: 0.5rem; align-items: center;" id="stats-date-filters">
                         <button class="filter-btn active" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-date="all" onclick="filterUserStatsDate('all')">Umumiy</button>
-                        <button class="filter-btn" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-date="today" onclick="filterUserStatsDate('today')">Bugun</button>
-                        <button class="filter-btn" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-date="month" onclick="filterUserStatsDate('month')">Shu oy</button>
+                        <input type="date" id="stats-exact-date" class="filter-btn" style="padding: 0.15rem 0.5rem; font-size: 0.8rem;" onchange="filterUserStatsDate('exact-date', this.value)">
+                        <input type="month" id="stats-exact-month" class="filter-btn" style="padding: 0.15rem 0.5rem; font-size: 0.8rem;" onchange="filterUserStatsDate('exact-month', this.value)">
                     </div>
                     <div class="menu-filters" style="margin: 0;" id="stats-order-filters">
                         <button class="filter-btn active" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-status="all" onclick="filterUserStatsOrders('all')">Hammasi</button>

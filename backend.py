@@ -80,6 +80,14 @@ def dict_factory(cursor, row):
         d[col[0]] = row[idx]
     return d
 
+@app.route('/api/orders/<order_id>', methods=['DELETE'])
+def delete_order(order_id):
+    conn = get_db()
+    conn.execute('DELETE FROM orders WHERE id = ?', (order_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"success": True})
+
 @app.route('/api/init', methods=['GET'])
 def get_init_data():
     conn = get_db()

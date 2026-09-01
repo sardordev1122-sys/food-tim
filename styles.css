@@ -88,8 +88,8 @@ p { color: var(--text-secondary); }
 /* Main Views */
 .view-section { display: none; flex: 1; }
 .view-section.active { display: flex; }
-.admin-subview, .chef-subview { display: none; }
-.admin-subview.active, .chef-subview.active { display: block; animation: fadeIn 0.3s ease; }
+.admin-subview, .chef-subview, .waiter-subview { display: none; }
+.admin-subview.active, .chef-subview.active, .waiter-subview.active { display: block; animation: fadeIn 0.3s ease; }
 @keyframes fadeIn { from {opacity:0;} to{opacity:1;} }
 
 /* Login */
@@ -245,7 +245,7 @@ header { display: flex; justify-content: space-between; align-items: center; mar
     backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 1rem;
 }
 .modal.active { display: flex; animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-.modal-content { width: 100%; max-width: 400px; position: relative; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); background: white; padding: 2rem; }
+.modal-content { width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; margin: 2vh auto; position: relative; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); background: white; padding: 2rem; }
 .close-modal { position: absolute; right: 1.5rem; top: 1.5rem; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); transition: color 0.3s ease, transform 0.3s ease;}
 .close-modal:hover { color: var(--danger-color); transform: rotate(90deg); }
 
