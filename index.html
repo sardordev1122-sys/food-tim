@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gourmet Dashboard Pro</title>
+    <link rel="icon" href="data:,">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style id="dynamic-theme"></style>
+
+    <!-- Waiter: Cart Modal -->
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('cart-modal')">&times;</span>
+            <h3 style="margin-bottom: 1.5rem; text-align: center;">Savat (Buyurtma)</h3>
+            
+            <div class="cart-table-input">
+                <label>Stol raqami:</label>
+                <input type="number" id="table-number" min="1" max="100" placeholder="Masalan: 5" required>
+            </div>
+            <div class="cart-table-input">
+                <label>Mijoz ismi (Ixtiyoriy):</label>
+                <input type="text" id="customer-name" placeholder="Masalan: Alisher">
+            </div>
+            
+            <div class="cart-items" id="cart-items-container" style="max-height: 250px; overflow-y: auto; margin-bottom: 1rem; padding-right: 0.5rem;">
+                <div class="empty-cart-msg">Savat bo'sh</div>
+            </div>
+            
+            <div class="cart-summary" style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                <div class="summary-row" style="display:flex; justify-content:space-between; margin-bottom: 1rem;">
+                    <span>Jami summa:</span>
+                    <strong id="cart-total">$0.00</strong>
+                </div>
+                <button id="btn-submit-order" class="btn primary-btn btn-block" disabled>Oshpazga Jo'natish <i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Notification Toast -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Login Section -->
+    <section id="login-section" class="view-section">
+        <div class="login-container">
+            <div class="glass-panel">
+                <div class="login-header">
+                    <i class="app-logo-icon fas fa-utensils logo-icon"></i>
+                    <h2 class="app-name-display">Gourmet Manager Pro</h2>
+                    <p>Sign in to your dashboard</p>
+                </div>
+                <form id="login-form">
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="username" placeholder="Username" required autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn primary-btn btn-block">Sign In</button>
+                    <div id="login-error" class="error-text"></div>
+                </form>
+                <div class="login-hints">
+                    <small>Default Admin: admin/admin</small>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Section -->
+    <section id="admin-dashboard" class="view-section main-layout">
+        <nav class="sidebar">
+            <div class="brand">
+                <i class="app-logo-icon fas fa-utensils"></i> <span class="app-name-display">Gourmet Admin</span>
+            </div>
+            <ul class="nav-links">
+                <li class="active admin-nav" data-target="admin-view-dashboard"><a href="#"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                <li class="admin-nav" data-target="admin-view-chefs"><a href="#"><i class="fas fa-fire"></i> Oshpazlar</a></li>
+                <li class="admin-nav" data-target="admin-view-waiters"><a href="#"><i class="fas fa-users"></i> Ofitsiantlar</a></li>
+                <li class="admin-nav" data-target="admin-view-menus"><a href="#"><i class="fas fa-book-open"></i> Menular</a></li>
+                <li class="admin-nav" data-target="admin-view-categories"><a href="#"><i class="fas fa-tags"></i> Kategoriyalar</a></li>
+                <li class="admin-nav" data-target="admin-view-orders"><a href="#"><i class="fas fa-list-ol"></i> Barcha Zakazlar</a></li>
+                <li class="admin-nav" data-target="admin-view-settings"><a href="#"><i class="fas fa-cogs"></i> Sozlamalar</a></li>
+                <li><a href="#" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </nav>
+        <main class="main-content">
+            <header>
+                <h2 id="admin-header-title">Dashboard</h2>
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="Admin">
+                </div>
+            </header>
+
+            <!-- Admin: Dashboard View -->
+            <div id="admin-view-dashboard" class="admin-subview active">
+                <div class="dashboard-cards">
+                    <div class="card stat-card" style="cursor: pointer;" onclick="document.querySelector('[data-target=\'admin-view-orders\']').click()">
+                        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-details">
+                            <h3>Umumiy Foyda</h3>
+                            <p id="admin-total-profit">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card" style="cursor: pointer;" onclick="document.querySelector('[data-target=\'admin-view-orders\']').click()">
+                        <div class="stat-icon"><i class="fas fa-receipt"></i></div>
+                        <div class="stat-details">
+                            <h3>Jami Zakazlar</h3>
+                            <p id="admin-total-orders">0</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card" style="cursor: pointer;" onclick="document.querySelector('[data-target=\'admin-view-chefs\']').click()">
+                        <div class="stat-icon" style="background:rgba(245,158,11,0.1); color:var(--warning-color)"><i class="fas fa-fire"></i></div>
+                        <div class="stat-details">
+                            <h3>Jami Oshpazlar</h3>
+                            <p id="admin-total-chefs">0</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card" style="cursor: pointer;" onclick="document.querySelector('[data-target=\'admin-view-waiters\']').click()">
+                        <div class="stat-icon" style="background:rgba(16,185,129,0.1); color:var(--success-color)"><i class="fas fa-users"></i></div>
+                        <div class="stat-details">
+                            <h3>Jami Ofitsiantlar</h3>
+                            <p id="admin-total-waiters">0</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card" style="cursor: pointer;" onclick="document.querySelector('[data-target=\'admin-view-menus\']').click()">
+                        <div class="stat-icon" style="background:rgba(139,92,246,0.1); color:var(--accent-color)"><i class="fas fa-book-open"></i></div>
+                        <div class="stat-details">
+                            <h3>Menyudagi Taomlar</h3>
+                            <p id="admin-total-menus">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Foyda Diagrammasi (So'nggi 7 kun)</h3>
+                    <div class="chart-container">
+                        <canvas id="profitChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin: Chefs View -->
+            <div id="admin-view-chefs" class="admin-subview">
+                <div class="action-header">
+                    <h3>Oshpazlar Ro'yxati</h3>
+                    <button class="btn primary-btn" onclick="openModal('staff-modal', 'chef')"><i class="fas fa-plus"></i> Qo'shish</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Ism Familiya</th>
+                                <th>Tel Raqam</th>
+                                <th>Login</th>
+                                <th>Parol</th>
+                                <th>Harakatlar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-chefs-table"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin: Waiters View -->
+            <div id="admin-view-waiters" class="admin-subview">
+                <div class="action-header">
+                    <h3>Ofitsiantlar Ro'yxati</h3>
+                    <button class="btn primary-btn" onclick="openModal('staff-modal', 'waiter')"><i class="fas fa-plus"></i> Qo'shish</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Ism Familiya</th>
+                                <th>Tel Raqam</th>
+                                <th>Login</th>
+                                <th>Parol</th>
+                                <th>Harakatlar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-waiters-table"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin: Menus View -->
+            <div id="admin-view-menus" class="admin-subview">
+                <div class="action-header">
+                    <h3>Taomlar Ro'yxati (Menyu)</h3>
+                    <button class="btn primary-btn" onclick="openModal('menu-modal')"><i class="fas fa-plus"></i> Yangi Taom</button>
+                </div>
+                <div class="menu-grid" id="admin-menus-grid">
+                    <!-- Menu cards injected here via JS -->
+                </div>
+            </div>
+
+            <!-- Admin: Categories View -->
+            <div id="admin-view-categories" class="admin-subview">
+                <div class="action-header">
+                    <h3>Menyu Kategoriyalari</h3>
+                    <button class="btn primary-btn" onclick="openModal('category-modal')"><i class="fas fa-plus"></i> Qo'shish</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Nomi</th>
+                                <th>Qiymati (Tizim uchun)</th>
+                                <th>Harakatlar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-categories-table"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin: Orders View -->
+            <div id="admin-view-orders" class="admin-subview">
+                <div class="action-header">
+                    <h3>Barcha Zakazlar Tarixi</h3>
+                </div>
+                <div class="menu-filters admin-orders-filters">
+                    <button class="filter-btn active" data-status="all">Hammasi</button>
+                    <button class="filter-btn" data-status="pending">Yangi (Kutilmoqda)</button>
+                    <button class="filter-btn" data-status="preparing">Tayyorlanmoqda</button>
+                    <button class="filter-btn" data-status="ready">Tayyorlangan</button>
+                    <button class="filter-btn" data-status="cancelled">Bekor Qilingan</button>
+                </div>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem; align-items: center; padding: 0 1rem;">
+                    <label style="font-weight: 500;">Xodim orqali qidirish:</label>
+                    <select id="admin-employee-filter" class="form-input" style="width: auto; margin-bottom: 0;" onchange="renderAdminOrders()">
+                        <option value="all">Barcha Xodimlar (Oshpaz va Ofitsiantlar)</option>
+                    </select>
+                </div>
+                <div class="orders-grid" id="admin-orders-container" style="margin-top: 1rem;">
+                    <!-- Orders will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Admin: Settings View -->
+            <div id="admin-view-settings" class="admin-subview">
+                <div class="action-header">
+                    <h3>Tizim Sozlamalari</h3>
+                </div>
+                <div class="glass-panel" style="padding: 2rem; max-width: 600px; margin-top: 1rem;">
+                    <form id="settings-form">
+                        <div class="form-wrapper">
+                            <div class="input-group-wrapper" style="margin-bottom: 1rem;">
+                                <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Dastur Nomi</label>
+                                <div class="input-group" style="margin:0;">
+                                    <i class="fas fa-font"></i>
+                                    <input type="text" id="setting-app-name" required>
+                                </div>
+                            </div>
+                            <div class="input-group-wrapper" style="margin-bottom: 1rem;">
+                                <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Logotip (FontAwesome klassi yoki Rasm yuklash)</label>
+                                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                                    <div class="input-group" style="flex: 1; margin: 0; min-width: 200px;">
+                                        <i class="fas fa-icons"></i>
+                                        <input type="text" id="setting-logo-icon" placeholder="Masalan: fa-utensils yoki rasm URL">
+                                    </div>
+                                    <div style="font-weight: 500; font-size: 0.9rem; color: var(--text-secondary);">YOKI</div>
+                                    <div class="input-group" style="flex: 1; margin: 0; min-width: 200px; padding: 0.5rem;">
+                                        <input type="file" id="setting-logo-upload" accept="image/*" style="width: 100%; border:none; background:transparent; font-size: 0.85rem; color: var(--text-primary);">
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div class="input-group-wrapper">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Asosiy Rang</label>
+                                    <input type="color" id="setting-primary-color" style="width:100%; height: 40px; border:none; border-radius: var(--radius-sm); cursor:pointer;">
+                                </div>
+                                <div class="input-group-wrapper">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Qo'shimcha Rang (Accent)</label>
+                                    <input type="color" id="setting-accent-color" style="width:100%; height: 40px; border:none; border-radius: var(--radius-sm); cursor:pointer;">
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div class="input-group-wrapper">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Shrift (Font)</label>
+                                    <div class="input-group" style="margin:0;">
+                                        <i class="fas fa-text-height"></i>
+                                        <select id="setting-font-family" class="styled-select" required>
+                                            <option value="Inter">Inter</option>
+                                            <option value="Roboto">Roboto</option>
+                                            <option value="Poppins">Poppins</option>
+                                            <option value="'Segoe UI', Tahoma">Segoe UI</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="input-group-wrapper">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Til (Language)</label>
+                                    <div class="input-group" style="margin:0;">
+                                        <i class="fas fa-language"></i>
+                                        <select id="setting-language" class="styled-select" required>
+                                            <option value="uz">O'zbekcha</option>
+                                            <option value="en">English</option>
+                                            <option value="ru">Русский</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn primary-btn" style="margin-top: 1rem; width: 100%;">Sozlamalarni Saqlash</button>
+                    </form>
+                </div>
+            </div>
+
+        </main>
+    </section>
+
+    <!-- Chef Section -->
+    <section id="chef-dashboard" class="view-section main-layout">
+        <nav class="sidebar">
+            <div class="brand">
+                <i class="fas fa-fire"></i> <span id="chef-sidebar-name">Oshpaz</span>
+            </div>
+            <ul class="nav-links">
+                <li class="active chef-nav" data-target="chef-view-dashboard"><a href="#"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                <li class="chef-nav" data-target="chef-view-orders"><a href="#"><i class="fas fa-list-ol"></i> Zakazlar</a></li>
+                <li><a href="#" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </nav>
+        <main class="main-content">
+            <header>
+                <h2 id="chef-header-title">Oshpaz Dashboard</h2>
+            </header>
+
+            <!-- Chef: Dashboard -->
+            <div id="chef-view-dashboard" class="chef-subview active">
+                <div class="dashboard-cards">
+                    <div class="card stat-card">
+                        <div class="stat-icon"><i class="fas fa-inbox"></i></div>
+                        <div class="stat-details">
+                            <h3>Olingan Zakazlar</h3>
+                            <p id="chef-stat-received">0</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon" style="color:var(--warning-color); background:rgba(245,158,11,0.1)"><i class="fas fa-spinner"></i></div>
+                        <div class="stat-details">
+                            <h3>Tayyorlanmoqda</h3>
+                            <p id="chef-stat-preparing">0</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon" style="color:var(--success-color); background:rgba(16,185,129,0.1)"><i class="fas fa-check-double"></i></div>
+                        <div class="stat-details">
+                            <h3>Tayyor</h3>
+                            <p id="chef-stat-ready">0</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                        <div class="stat-details">
+                            <h3>Ishlangan Summa</h3>
+                            <p id="chef-stat-earned">$0.00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chef: Orders List -->
+            <div id="chef-view-orders" class="chef-subview">
+                <div class="menu-filters chef-orders-filters">
+                    <button class="filter-btn active" data-status="active">Aktiv (Yangi va Tayyorlanayotgan)</button>
+                    <button class="filter-btn" data-status="ready">Tayyor (Tugatilgan)</button>
+                    <button class="filter-btn" data-status="cancelled">Bekor Qilingan</button>
+                </div>
+                <div class="orders-grid" id="chef-orders-container" style="margin-top: 1rem;">
+                    <!-- Cards injected via JS -->
+                </div>
+            </div>
+        </main>
+    </section>
+
+    <!-- Waiter Section -->
+    <section id="waiter-dashboard" class="view-section main-layout">
+        <nav class="sidebar">
+            <div class="brand">
+                <i class="fas fa-concierge-bell"></i> <span id="waiter-sidebar-name">Ofitsiant</span>
+            </div>
+            <ul class="nav-links">
+                <li class="active waiter-nav" data-target="waiter-view-menu"><a href="#"><i class="fas fa-book-open"></i> Menyu & Buyurtma</a></li>
+                <li class="waiter-nav" data-target="waiter-view-orders"><a href="#"><i class="fas fa-list-ol"></i> Mening Zakazlarim</a></li>
+                <li><a href="#" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </nav>
+        
+        <main class="main-content waiter-layout">
+            
+            <div id="waiter-view-menu" class="waiter-subview active">
+                <!-- Header with Cart Button -->
+                <div class="waiter-menu-area" style="width: 100%;">
+                    <header class="waiter-header">
+                        <h2>Kassa</h2>
+                    <div style="display:flex; gap:1rem;">
+                        <button class="btn icon-btn" onclick="openCartModal()" style="position:relative; background: var(--primary-color); color: white;">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span id="cart-badge" class="badge count-badge hidden">0</span>
+                        </button>
+                        <button class="btn icon-btn" onclick="openNotificationsModal()" style="position:relative;">
+                            <i class="fas fa-bell"></i>
+                            <span id="notification-badge" class="badge count-badge hidden">0</span>
+                        </button>
+                    </div>
+                </header>
+                <div class="menu-filters" id="waiter-menu-filters">
+                    <!-- Dynamic filters -->
+                </div>
+                <div class="menu-grid" id="menu-items-container">
+                    <!-- Items -->
+                </div>
+            </div>
+        </main>
+    </section>
+
+
+    <!-- Modals -->
+
+    <!-- Admin: Staff Add/Edit Modal -->
+    <div id="staff-modal" class="modal">
+        <div class="modal-content glass-panel" style="max-width: 600px;">
+            <span class="close-modal" onclick="closeModal('staff-modal')">&times;</span>
+            <h2 id="staff-modal-title">Xodim Qo'shish</h2>
+            <form id="staff-form">
+                <input type="hidden" id="staff-id">
+                <input type="hidden" id="staff-role">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <i class="fas fa-user-tag"></i>
+                        <input type="text" id="staff-name" placeholder="Ism Familiya" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-phone"></i>
+                        <input type="text" id="staff-phone" placeholder="Tel raqam (+998...)" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <input type="text" id="staff-login" placeholder="Login (Avtomatik)" required readonly style="background: rgba(0,0,0,0.05);">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-key"></i>
+                        <input type="text" id="staff-password" placeholder="Parol (Avtomatik)" required readonly style="background: rgba(0,0,0,0.05);">
+                    </div>
+                </div>
+                <button type="submit" class="btn success-btn btn-block mt-3">Saqlash</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin: Menu Add/Edit Modal -->
+    <div id="menu-modal" class="modal">
+        <div class="modal-content glass-panel" style="max-width: 600px;">
+            <span class="close-modal" onclick="closeModal('menu-modal')">&times;</span>
+            <h2 id="menu-modal-title">Taom Qo'shish</h2>
+            <form id="menu-form">
+                <input type="hidden" id="menu-id">
+                <div class="form-wrapper">
+                    <div class="input-group-wrapper" style="margin-bottom: 1rem;">
+                        <label style="display:block; margin-bottom:0.5rem; font-weight:500; font-size:0.9rem; color:var(--text-secondary);">Rasm URL manzili yoki Kompyuterdan yuklash</label>
+                        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                            <div class="input-group" style="flex: 1; margin: 0; min-width: 200px;">
+                                <i class="fas fa-link"></i>
+                                <input type="text" id="menu-icon" placeholder="https://rasm.uz/rasm.jpg">
+                            </div>
+                            <div style="font-weight: 500; font-size: 0.9rem; color: var(--text-secondary);">YOKI</div>
+                            <div class="input-group" style="flex: 1; margin: 0; min-width: 200px; padding: 0.5rem;">
+                                <input type="file" id="menu-image-upload" accept="image/*" style="width: 100%; border:none; background:transparent; font-size: 0.85rem; color: var(--text-primary);">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="input-group-wrapper">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:500; font-size:0.9rem; color:var(--text-secondary);">Taom Nomi</label>
+                            <div class="input-group" style="margin:0;">
+                                <i class="fas fa-hamburger"></i>
+                                <input type="text" id="menu-name" placeholder="Masalan: Osh, Qozonkabob" required>
+                            </div>
+                        </div>
+                        <div class="input-group-wrapper">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:500; font-size:0.9rem; color:var(--text-secondary);">Kategoriya</label>
+                            <div class="input-group" style="margin:0;">
+                                <i class="fas fa-tags"></i>
+                                <select id="menu-category" class="styled-select" required>
+                                    <!-- Populated dynamically -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group-wrapper">
+                        <label style="display:block; margin-bottom:0.5rem; font-weight:500; font-size:0.9rem; color:var(--text-secondary);">Narxi ($)</label>
+                        <div class="input-group" style="margin:0;">
+                            <i class="fas fa-dollar-sign"></i>
+                            <input type="number" id="menu-price" step="0.01" placeholder="Masalan: 12.50" required>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn danger-btn" id="btn-delete-menu" style="display:none;" onclick="deleteMenuFromModal()">O'chirish</button>
+                    <button type="submit" class="btn success-btn" style="flex:1;">Saqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin: Staff Stats Modal -->
+    <div id="user-stats-modal" class="modal">
+        <div class="modal-content glass-panel" style="max-width: 650px; padding: 0; overflow: hidden;">
+            <span class="close-modal" onclick="closeModal('user-stats-modal')" style="z-index: 10; color: white; right: 1rem; top: 1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">&times;</span>
+            
+            <!-- Header Background & Avatar -->
+            <div style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%); padding: 2.5rem 2rem 1.5rem; text-align: center; color: white; position: relative;">
+                <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 1rem; border: 3px solid rgba(255,255,255,0.5); backdrop-filter: blur(5px);">
+                    <i class="fas fa-user" id="stats-avatar-icon"></i>
+                </div>
+                <h3 id="stats-name" style="margin-bottom: 0.5rem; font-size: 1.75rem; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">Ism Familiya</h3>
+                <span id="stats-role" class="badge" style="background: rgba(255,255,255,0.2); color: white; font-size: 0.9rem; padding: 0.4rem 1.2rem; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.3);">Rol</span>
+            </div>
+            
+            <div style="padding: 2rem;">
+                <!-- Quick Info -->
+                <div style="display: flex; justify-content: space-around; background: rgba(0,0,0,0.03); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem;">
+                    <div style="text-align: center;">
+                        <small style="color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Telefon</small>
+                        <strong id="stats-phone" style="color: var(--text-primary);"><i class="fas fa-phone-alt text-secondary mr-2"></i><span id="stats-phone-val"></span></strong>
+                    </div>
+                    <div style="border-left: 1px solid var(--border-color); margin: 0 1rem;"></div>
+                    <div style="text-align: center;">
+                        <small style="color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Login</small>
+                        <strong id="stats-login" style="color: var(--text-primary);"><i class="fas fa-sign-in-alt text-secondary mr-2"></i><span id="stats-login-val"></span></strong>
+                    </div>
+                    <div style="border-left: 1px solid var(--border-color); margin: 0 1rem;"></div>
+                    <div style="text-align: center;">
+                        <small style="color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Parol</small>
+                        <strong id="stats-password" style="color: var(--text-primary);"><i class="fas fa-key text-secondary mr-2"></i><span id="stats-password-val"></span></strong>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="dashboard-cards" style="grid-template-columns: 1fr 1fr; margin-bottom: 1.5rem;">
+                    <div class="card stat-card" style="padding:1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.1) 100%); border-left: 4px solid var(--primary-color);">
+                        <div class="stat-icon" style="width:45px;height:45px;font-size:1.3rem; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05);"><i class="fas fa-receipt"></i></div>
+                        <div class="stat-details">
+                            <h3>Jami Zakazlar</h3>
+                            <p id="stats-total-orders" style="font-size: 1.75rem; color: var(--primary-color);">0</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card" style="padding:1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.1) 100%); border-left: 4px solid var(--success-color);">
+                        <div class="stat-icon" style="width:45px;height:45px;font-size:1.3rem;background:white;color:var(--success-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05);"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-details">
+                            <h3>Daromad</h3>
+                            <p id="stats-total-income" style="font-size: 1.75rem; color: var(--success-color);">$0.00</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filters for Orders -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;">
+                    <h4 style="margin: 0; font-size: 1.1rem;"><i class="fas fa-history text-secondary mr-2"></i>Zakazlar Tarixi</h4>
+                    <div class="menu-filters" style="margin: 0;" id="stats-order-filters">
+                        <button class="filter-btn active" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-status="all" onclick="filterUserStatsOrders('all')">Hammasi</button>
+                        <button class="filter-btn" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-status="ready" onclick="filterUserStatsOrders('ready')">Tugatilgan</button>
+                        <button class="filter-btn" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-status="cancelled" onclick="filterUserStatsOrders('cancelled')">Bekor</button>
+                    </div>
+                </div>
+
+                <div id="stats-orders-list" style="max-height: 250px; overflow-y: auto; text-align: left; padding-right: 0.5rem; margin-top: 1rem;">
+                    <!-- Orders will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin: Category Modal -->
+    <div id="category-modal" class="modal">
+        <div class="modal-content glass-panel" style="max-width: 500px;">
+            <span class="close-modal" onclick="closeModal('category-modal')">&times;</span>
+            <h2 id="category-modal-title">Kategoriya Qo'shish</h2>
+            <form id="category-form">
+                <input type="hidden" id="category-id">
+                <input type="hidden" id="category-value">
+                <div class="form-grid" style="grid-template-columns: 1fr;">
+                    <div class="input-group">
+                        <i class="fas fa-tag"></i>
+                        <input type="text" id="category-name" placeholder="Nomi (Masalan: Salatlar, Milliy Taomlar)" required>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="submit" class="btn success-btn" style="flex:1;">Saqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Waiter Notifications Modal -->
+    <div id="notification-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <span class="close-modal" onclick="closeModal('notification-modal')">&times;</span>
+            <h2>Xabarlar</h2>
+            <div id="modal-notifications-list" class="notifications-list">
+                <!-- Notifications injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
