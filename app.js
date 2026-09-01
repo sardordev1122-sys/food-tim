@@ -115,14 +115,12 @@ function showDashboard(role) {
 
 function updateDashboards(role, renderChartAnim = false) {
     if (role === 'admin') {
-        renderMenuAdmin();
-        renderStaff();
-        renderCategories();
+        renderAdminDashboard(renderChartAnim);
     } else if (role === 'chef') {
-        renderChefOrders();
+        renderChefDashboard();
+        renderChefMyOrders();
     } else if (role === 'waiter') {
-        renderCategories();
-        renderMenu();
+        renderWaiterDashboard();
         renderWaiterMyOrders();
     }
 }
@@ -288,8 +286,8 @@ function renderAdminCategories() {
                 <td><strong>${c.name}</strong></td>
                 <td><span class="badge" style="text-transform:none;">${c.value}</span></td>
                 <td>
-                    <button class="btn icon-btn text-warning" onclick="editCategory('${c.id}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn icon-btn text-danger" onclick="deleteCategory('${c.id}')"><i class="fas fa-trash"></i></button>
+                    <button class="btn icon-btn text-warning" onclick="event.stopPropagation(); editCategory('${c.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn icon-btn text-danger" onclick="event.stopPropagation(); deleteCategory('${c.id}')"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>`;
     });
@@ -311,9 +309,9 @@ function renderUsersTable(usersList, tableId) {
             <tr onclick="viewUserStats(${u.id})" style="cursor:pointer;" title="Statistikani ko'rish">
                 <td>${u.name}</td><td>${u.phone}</td><td>${u.login}</td><td>***</td>
                 <td><span style="color:var(--text-secondary);">${count} ta</span> / <strong style="color:var(--success-color);">$${totalIncome.toFixed(2)}</strong></td>
-                <td onclick="event.stopPropagation()">
-                    <button class="btn icon-btn text-warning" onclick="editUser(${u.id})"><i class="fas fa-edit"></i></button>
-                    <button class="btn icon-btn text-danger" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>
+                <td>
+                    <button class="btn icon-btn text-warning" onclick="event.stopPropagation(); editUser(${u.id})"><i class="fas fa-edit"></i></button>
+                    <button class="btn icon-btn text-danger" onclick="event.stopPropagation(); deleteUser(${u.id})"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>`;
     });
@@ -384,8 +382,9 @@ function renderAdminOrders() {
                     <span><i class="fas fa-clock"></i> ${new Date(order.timestamp).toLocaleString()}</span>
                 </div>
                 <ul class="order-items-list" style="margin-top:0.5rem; max-height:100px; overflow-y:auto;">${itemsHtml}</ul>
-                <div style="margin-top:auto; font-weight:bold; text-align:right; border-top:1px solid var(--border-color); padding-top:0.5rem;">
-                    Umumiy: $${order.total.toFixed(2)}
+                <div style="margin-top:auto; font-weight:bold; text-align:right; border-top:1px solid var(--border-color); padding-top:0.5rem; display:flex; justify-content:space-between; align-items:center;">
+                    <button class="btn icon-btn text-danger" onclick="event.stopPropagation(); deleteOrderPermanently('${order.id}')" title="O'chirish"><i class="fas fa-trash"></i></button>
+                    <span>Umumiy: $${order.total.toFixed(2)}</span>
                 </div>
             </div>`;
     });
@@ -437,7 +436,8 @@ window.deleteUser = async function(id) {
 
 let currentUserStatsId = null;
 let currentStatsFilter = 'all';
-let currentStatsDateFilter = 'all';
+let currentStatsDateFilterType = 'all';
+let currentStatsDateFilterValue = null;
 
 window.viewUserStats = function(id) {
     currentUserStatsId = id;
@@ -459,20 +459,41 @@ window.viewUserStats = function(id) {
     document.querySelector('#stats-order-filters .filter-btn[data-status="all"]').classList.add('active');
     currentStatsFilter = 'all';
 
-    document.querySelectorAll('#stats-date-filters .filter-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelector('#stats-date-filters .filter-btn[data-date="all"]').classList.add('active');
-    currentStatsDateFilter = 'all';
-
-    renderUserStatsOrders();
-    document.getElementById('user-stats-modal').classList.add('active');
+    filterUserStatsDate('all');
+    
+    document.querySelectorAll('.admin-subview').forEach(el => el.classList.remove('active'));
+    document.getElementById('admin-view-staff-stats').classList.add('active');
 };
 
-window.filterUserStatsDate = function(dateFilter) {
-    currentStatsDateFilter = dateFilter;
-    document.querySelectorAll('#stats-date-filters .filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if(btn.dataset.date === dateFilter) btn.classList.add('active');
-    });
+window.closeAdminStaffStats = function() {
+    const role = document.getElementById('stats-role').textContent.toLowerCase();
+    document.querySelectorAll('.admin-subview').forEach(el => el.classList.remove('active'));
+    if (role === 'oshpaz' || role === 'chef') {
+        document.getElementById('admin-view-chefs').classList.add('active');
+    } else {
+        document.getElementById('admin-view-waiters').classList.add('active');
+    }
+};
+
+window.filterUserStatsDate = function(type, value = null) {
+    currentStatsDateFilterType = type;
+    currentStatsDateFilterValue = value;
+    
+    document.querySelectorAll('#stats-date-filters .filter-btn').forEach(btn => btn.classList.remove('active'));
+    
+    if (type === 'all') {
+        document.querySelector('#stats-date-filters button[data-date="all"]').classList.add('active');
+        if(document.getElementById('stats-exact-date')) document.getElementById('stats-exact-date').value = '';
+        if(document.getElementById('stats-exact-month')) document.getElementById('stats-exact-month').value = '';
+    } else if (type === 'exact-date') {
+        document.getElementById('stats-exact-date').classList.add('active');
+        if(document.getElementById('stats-exact-month')) document.getElementById('stats-exact-month').value = '';
+        document.querySelector('#stats-date-filters button[data-date="all"]').classList.remove('active');
+    } else if (type === 'exact-month') {
+        document.getElementById('stats-exact-month').classList.add('active');
+        if(document.getElementById('stats-exact-date')) document.getElementById('stats-exact-date').value = '';
+        document.querySelector('#stats-date-filters button[data-date="all"]').classList.remove('active');
+    }
     renderUserStatsOrders();
 };
 
@@ -616,16 +637,23 @@ function renderUserStatsOrders() {
     
     // Apply Date Filter
     let dateFilteredOrders = allUserOrders;
-    const now = new Date();
-    if (currentStatsDateFilter === 'today') {
+    
+    if (currentStatsDateFilterType === 'exact-date' && currentStatsDateFilterValue) {
         dateFilteredOrders = allUserOrders.filter(o => {
             const d = new Date(o.timestamp);
-            return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const localDateStr = `${yyyy}-${mm}-${dd}`;
+            return localDateStr === currentStatsDateFilterValue;
         });
-    } else if (currentStatsDateFilter === 'month') {
+    } else if (currentStatsDateFilterType === 'exact-month' && currentStatsDateFilterValue) {
         dateFilteredOrders = allUserOrders.filter(o => {
             const d = new Date(o.timestamp);
-            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const localMonthStr = `${yyyy}-${mm}`;
+            return localMonthStr === currentStatsDateFilterValue;
         });
     }
 
@@ -661,7 +689,7 @@ function renderUserStatsOrders() {
                             <div style="display:flex; align-items:center;">
                                 <span class="badge" style="background: ${statusColor}; color: white; margin-right: 0.5rem;">${statusText}</span>
                                 <span style="color:var(--success-color); font-weight:bold; font-size: 1.1rem; margin-right: 0.5rem;">$${o.total.toFixed(2)}</span>
-                                <button class="btn icon-btn danger-btn" style="padding: 0.2rem 0.4rem; font-size: 0.8rem; height: auto;" onclick="deleteOrderPermanently('${o.id}')" title="O'chirish"><i class="fas fa-trash"></i></button>
+                                <button class="btn icon-btn danger-btn" style="padding: 0.2rem 0.4rem; font-size: 0.8rem; height: auto;" onclick="event.stopPropagation(); deleteOrderPermanently('${o.id}')" title="O'chirish"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                         <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0.5rem; line-height: 1.4;">${itemsHtml}</p>
@@ -776,15 +804,21 @@ window.deleteCategory = async function(id) {
 
 // --- Chef ---
 function renderChefDashboard() {
-    document.getElementById('chef-sidebar-name').textContent = currentUser.name;
-    const pendingOrders = state.orders.filter(o => o.status === 'pending');
+    const nameEl = document.getElementById('chef-sidebar-name');
+    if (nameEl && currentUser) nameEl.textContent = currentUser.name;
+    const pendingOrders = state.orders.filter(o => o.status === 'pending' && (!o.chefId || o.chefId === currentUser.id));
     const preparingOrders = state.orders.filter(o => o.status === 'preparing' && o.chefId === currentUser.id);
     const readyOrders = state.orders.filter(o => o.status === 'ready' && o.chefId === currentUser.id);
     
-    document.getElementById('chef-stat-received').textContent = pendingOrders.length;
-    document.getElementById('chef-stat-preparing').textContent = preparingOrders.length;
-    document.getElementById('chef-stat-ready').textContent = readyOrders.length;
-    document.getElementById('chef-stat-earned').textContent = `$${readyOrders.reduce((s,o)=>s+o.total,0).toFixed(2)}`;
+    const el1 = document.getElementById('chef-stat-received');
+    const el2 = document.getElementById('chef-stat-preparing');
+    const el3 = document.getElementById('chef-stat-ready');
+    const el4 = document.getElementById('chef-stat-earned');
+    
+    if (el1) el1.textContent = pendingOrders.length;
+    if (el2) el2.textContent = preparingOrders.length;
+    if (el3) el3.textContent = readyOrders.length;
+    if (el4) el4.textContent = `$${readyOrders.reduce((s,o)=>s+o.total,0).toFixed(2)}`;
 
     const container = document.getElementById('chef-orders-container');
     if (!container) return;
@@ -806,8 +840,8 @@ function renderChefDashboard() {
         
         let itemsHtml = order.items.map(i => `<li>${i.qty}x ${i.name}</li>`).join('');
         let actionButtons = '';
-        if (isPending) actionButtons = `<button class="btn danger-btn" onclick="updateOrderStatus('${order.id}', 'cancelled')">Bekor Qilish</button><button class="btn primary-btn" onclick="updateOrderStatus('${order.id}', 'preparing')">Qabul Qilish</button>`;
-        else if (order.status === 'preparing') actionButtons = `<button class="btn success-btn" onclick="updateOrderStatus('${order.id}', 'ready')"><i class="fas fa-check"></i> Tayyor (Tugatish)</button>`;
+        if (isPending) actionButtons = `<button class="btn danger-btn" onclick="updateOrderStatus('${order.id}', 'cancelled')">Bekor Qilish</button><button class="btn primary-btn" onclick="updateOrderStatus('${order.id}', 'preparing')">Qabul Qilish</button><button class="btn text-primary" style="margin-top:0.5rem; width:100%; border:1px solid var(--primary-color);" onclick="openTransferModal('${order.id}')"><i class="fas fa-exchange-alt"></i> Boshqa oshpazga</button>`;
+        else if (order.status === 'preparing') actionButtons = `<button class="btn success-btn" onclick="updateOrderStatus('${order.id}', 'ready')"><i class="fas fa-check"></i> Tayyor (Tugatish)</button><button class="btn text-primary" style="margin-top:0.5rem; width:100%; border:1px solid var(--primary-color);" onclick="openTransferModal('${order.id}')"><i class="fas fa-exchange-alt"></i> Boshqa oshpazga</button>`;
         else actionButtons = `<span style="color:var(--text-secondary); font-weight:bold;">${isReady ? 'Tugatilgan' : 'Bekor Qilingan'}</span>`;
         
         let badgeColor = isPending ? 'var(--warning-color)' : (isReady ? 'var(--success-color)' : (isCancelled ? 'var(--danger-color)' : 'var(--primary-color)'));
@@ -889,7 +923,8 @@ window.setWaiterCategory = function(btn, category) {
 };
 
 function renderWaiterDashboard() {
-    document.getElementById('waiter-sidebar-name').textContent = currentUser.name;
+    const waiterNameEl = document.getElementById('waiter-sidebar-name');
+    if (waiterNameEl && currentUser) waiterNameEl.textContent = currentUser.name;
     
     // Render dynamic filters
     const filterContainer = document.getElementById('waiter-menu-filters');
@@ -1183,4 +1218,160 @@ function setupEventListeners() {
     });
 }
 
+function setChefCategory(btn, cat) {
+    document.querySelectorAll('#chef-order-filters .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    chefOrdersCategory = cat;
+    renderChefDashboard();
+}
+
+window.openTransferModal = function(orderId) {
+    const order = state.orders.find(o => o.id === orderId);
+    if(!order) return;
+    document.getElementById('transfer-order-id').value = orderId;
+    const select = document.getElementById('transfer-chef-select');
+    select.innerHTML = '';
+    const otherChefs = state.users.filter(u => u.role === 'chef' && u.id !== currentUser.id);
+    if(otherChefs.length === 0) {
+        select.innerHTML = '<option value="">Boshqa oshpaz yo\'q</option>';
+    } else {
+        otherChefs.forEach(c => {
+            select.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+        });
+    }
+    document.getElementById('transfer-modal').classList.add('active');
+};
+
+window.submitTransferOrder = async function() {
+    const orderId = document.getElementById('transfer-order-id').value;
+    const chefId = document.getElementById('transfer-chef-select').value;
+    if(!chefId) { showToast("Oshpaz tanlanmadi", "warning"); return; }
+    
+    const order = state.orders.find(o => o.id === orderId);
+    if(!order) return;
+    
+    try {
+        const payload = { status: order.status, chefId: parseInt(chefId) };
+        const res = await fetch(`${API_BASE}/orders/${orderId}/status`, { method: 'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        if(res.ok) {
+            showToast("Boshqa oshpazga muvaffaqiyatli o'tkazildi!", "success");
+            closeModal('transfer-modal');
+            await fetchData(); 
+            updateDashboards('chef');
+        } else {
+            showToast("Xatolik yuz berdi", "danger");
+        }
+    } catch(err) {
+        showToast("Tarmoq xatosi", "danger");
+    }
+};
+
 document.addEventListener('DOMContentLoaded', init);
+
+// --- Chef My Orders ---
+let chefMyDateFilterType = 'all';
+let chefMyDateFilterValue = null;
+let chefMyStatusFilter = 'all';
+
+window.filterChefMyDate = function(type, value = null) {
+    chefMyDateFilterType = type;
+    chefMyDateFilterValue = value;
+    
+    document.querySelectorAll('#chef-my-date-filters .filter-btn').forEach(btn => btn.classList.remove('active'));
+    
+    if (type === 'all') {
+        document.querySelector('#chef-my-date-filters button[data-date="all"]').classList.add('active');
+        if(document.getElementById('chef-my-exact-date')) document.getElementById('chef-my-exact-date').value = '';
+        if(document.getElementById('chef-my-exact-month')) document.getElementById('chef-my-exact-month').value = '';
+    } else if (type === 'exact-date') {
+        document.getElementById('chef-my-exact-date').classList.add('active');
+        if(document.getElementById('chef-my-exact-month')) document.getElementById('chef-my-exact-month').value = '';
+        document.querySelector('#chef-my-date-filters button[data-date="all"]').classList.remove('active');
+    } else if (type === 'exact-month') {
+        document.getElementById('chef-my-exact-month').classList.add('active');
+        if(document.getElementById('chef-my-exact-date')) document.getElementById('chef-my-exact-date').value = '';
+        document.querySelector('#chef-my-date-filters button[data-date="all"]').classList.remove('active');
+    }
+    
+    renderChefMyOrders();
+};
+
+window.filterChefMyOrders = function(status) {
+    chefMyStatusFilter = status;
+    document.querySelectorAll('#chef-my-order-filters .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if(btn.dataset.status === status) btn.classList.add('active');
+    });
+    renderChefMyOrders();
+};
+
+window.renderChefMyOrders = function() {
+    if (!currentUser || currentUser.role !== 'chef') return;
+    
+    let myOrders = state.orders.filter(o => o.chefId === currentUser.id);
+    
+    // Apply Date Filter
+    let dateFilteredOrders = myOrders;
+    
+    if (chefMyDateFilterType === 'exact-date' && chefMyDateFilterValue) {
+        dateFilteredOrders = myOrders.filter(o => {
+            const d = new Date(o.timestamp);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const localDateStr = yyyy + "-" + mm + "-" + dd;
+            return localDateStr === chefMyDateFilterValue;
+        });
+    } else if (chefMyDateFilterType === 'exact-month' && chefMyDateFilterValue) {
+        dateFilteredOrders = myOrders.filter(o => {
+            const d = new Date(o.timestamp);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const localMonthStr = yyyy + "-" + mm;
+            return localMonthStr === chefMyDateFilterValue;
+        });
+    }
+
+    // Total income calculation
+    const completedOrders = dateFilteredOrders.filter(o => o.status === 'ready' || o.status === 'completed');
+    const totalOrdersEl = document.getElementById('chef-my-total-orders');
+    const totalIncomeEl = document.getElementById('chef-my-total-income');
+    if(totalOrdersEl) totalOrdersEl.textContent = dateFilteredOrders.length;
+    if(totalIncomeEl) totalIncomeEl.textContent = "$" + completedOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2);
+
+    let filteredOrders = dateFilteredOrders;
+    if (chefMyStatusFilter !== 'all') {
+        filteredOrders = dateFilteredOrders.filter(o => o.status === chefMyStatusFilter);
+    }
+    
+    const container = document.getElementById('chef-my-orders-container');
+    if(container) {
+        container.innerHTML = '';
+        if(filteredOrders.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:var(--text-secondary); width: 100%; margin-top: 2rem;">Zakazlar mavjud emas.</p>';
+        } else {
+            filteredOrders.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+            filteredOrders.forEach(o => {
+                let itemsHtml = o.items.map(i => `<b>${i.qty}x</b> ${i.name}`).join(', ');
+                let statusColor = 'var(--primary-color)';
+                let statusText = 'Yangi';
+                if(o.status === 'ready') { statusColor = 'var(--success-color)'; statusText = 'Tayyor'; }
+                else if(o.status === 'cancelled') { statusColor = 'var(--danger-color)'; statusText = 'Bekor'; }
+                else if(o.status === 'preparing') { statusColor = 'var(--warning-color)'; statusText = 'Jarayonda'; }
+                
+                container.innerHTML += `
+                    <div style="background: white; padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1rem; border-left: 5px solid ${statusColor}; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 0.75rem; align-items: center;">
+                            <strong style="font-size: 1.3rem;">Stol ${o.table}</strong>
+                            <div style="display:flex; align-items:center;">
+                                <span class="badge" style="background: ${statusColor}; color: white; margin-right: 0.5rem; padding: 0.4rem 0.8rem; font-size: 0.9rem;">${statusText}</span>
+                                <span style="color:var(--success-color); font-weight:bold; font-size: 1.3rem;">$${o.total.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <p style="font-size:1rem; color:var(--text-secondary); margin-bottom:0.75rem; line-height: 1.5;">${itemsHtml}</p>
+                        <small style="color:var(--text-secondary); font-size:0.85rem;"><i class="fas fa-clock mr-2"></i> ${new Date(o.timestamp).toLocaleString()}</small>
+                    </div>`;
+            });
+        }
+    }
+};
