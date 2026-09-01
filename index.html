@@ -32,8 +32,7 @@
             
             <div class="cart-summary" style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
                 <div class="summary-row" style="display:flex; justify-content:space-between; margin-bottom: 1rem;">
-                    <span>Jami summa:</span>
-                    <strong id="cart-total">$0.00</strong>
+                    <h3 style="margin: 0; color:var(--primary-color);">Jami: <span id="cart-total">0.00 so'm</span></h3>
                 </div>
                 <button id="btn-submit-order" class="btn primary-btn btn-block" disabled>Oshpazga Jo'natish <i class="fas fa-paper-plane"></i></button>
             </div>
@@ -108,7 +107,7 @@
                         <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
                         <div class="stat-details">
                             <h3>Umumiy Foyda</h3>
-                            <p id="admin-total-profit">$0.00</p>
+                            <div id="admin-total-profit" class="stat-value">0.00 so'm</div>
                         </div>
                     </div>
                     <div class="card stat-card" style="cursor: pointer;" onclick="document.querySelector('[data-target=\'admin-view-orders\'] a').click()">
@@ -196,7 +195,7 @@
                                 </div>
                                 <div>
                                     <small style="color: var(--text-secondary); display: block;">Daromad</small>
-                                    <strong id="stats-total-income" style="font-size: 1.75rem; color: var(--success-color);">$0.00</strong>
+                                    <div class="price" style="font-size:1.5rem; color:var(--primary-color); font-weight:bold;">0.00 so'm</div>
                                 </div>
                             </div>
                         </div>
@@ -431,7 +430,7 @@
                     </div>
                     <div style="text-align: center; flex: 1;">
                         <small style="color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Daromad</small>
-                        <strong id="chef-my-total-income" style="font-size: 1.5rem; color: var(--success-color);">$0.00</strong>
+                        <div id="chef-stat-earned" class="stat-value" style="color:var(--success-color);">0.00 so'm</div>
                     </div>
                 </div>
 
@@ -493,6 +492,7 @@
                 <div class="menu-grid" id="menu-items-container">
                     <!-- Items -->
                 </div>
+                </div>
             </div>
             
             <div id="waiter-view-orders" class="waiter-subview">
@@ -508,7 +508,7 @@
                     </div>
                     <div style="text-align: center; flex: 1;">
                         <small style="color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Daromad</small>
-                        <strong id="waiter-my-total-income" style="font-size: 1.5rem; color: var(--success-color);">$0.00</strong>
+                        <strong id="waiter-my-total-income" style="font-size: 1.5rem; color: var(--success-color);">0.00 so'm</strong>
                     </div>
                 </div>
 

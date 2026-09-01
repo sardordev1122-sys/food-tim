@@ -227,7 +227,7 @@ function renderAdminDashboard(renderChartAnim) {
     renderAdminSettings();
     const completedOrders = state.orders.filter(o => o.status === 'ready' || o.status === 'completed');
     const profit = completedOrders.reduce((sum, o) => sum + o.total, 0);
-    document.getElementById('admin-total-profit').textContent = `$${profit.toFixed(2)}`;
+    document.getElementById('admin-total-profit').textContent = `${profit.toFixed(2)} so'm`;
     document.getElementById('admin-total-orders').textContent = state.orders.length;
     
     document.getElementById('admin-total-chefs').textContent = state.users.filter(u => u.role === 'chef').length;
@@ -269,7 +269,7 @@ function renderChart(completedOrders) {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Kunlik Foyda ($)', data: data, borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)', tension: 0.4, fill: true
+                label: "Kunlik Foyda (so'm)", data: data, borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)', tension: 0.4, fill: true
             }]
         },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { color: 'rgba(255,255,255,0.05)' } } }, plugins: { legend: { labels: { color: '#f8fafc' } } } }
@@ -308,7 +308,7 @@ function renderUsersTable(usersList, tableId) {
         tbody.innerHTML += `
             <tr onclick="viewUserStats(${u.id})" style="cursor:pointer;" title="Statistikani ko'rish">
                 <td>${u.name}</td><td>${u.phone}</td><td>${u.login}</td><td>***</td>
-                <td><span style="color:var(--text-secondary);">${count} ta</span> / <strong style="color:var(--success-color);">$${totalIncome.toFixed(2)}</strong></td>
+                <td><span style="color:var(--text-secondary);">${count} ta</span> / <strong style="color:var(--success-color);">${totalIncome.toFixed(2)} so'm</strong></td>
                 <td>
                     <button class="btn icon-btn text-warning" onclick="event.stopPropagation(); editUser(${u.id})"><i class="fas fa-edit"></i></button>
                     <button class="btn icon-btn text-danger" onclick="event.stopPropagation(); deleteUser(${u.id})"><i class="fas fa-trash"></i></button>
@@ -328,7 +328,7 @@ function renderAdminMenuGrid(menuList) {
         container.innerHTML += `
             <div class="menu-item" onclick="editMenu(${m.id})">
                 <div class="menu-item-icon">${iconHtml}</div>
-                <h4>${m.name}</h4><div class="price">$${m.price.toFixed(2)}</div>
+                <h4>${m.name}</h4><div class="price">${m.price.toFixed(2)} so'm</div>
                 <span class="badge" style="margin-top:0.5rem; text-transform:capitalize;">${catName}</span>
             </div>`;
     });
@@ -384,7 +384,7 @@ function renderAdminOrders() {
                 <ul class="order-items-list" style="margin-top:0.5rem; max-height:100px; overflow-y:auto;">${itemsHtml}</ul>
                 <div style="margin-top:auto; font-weight:bold; text-align:right; border-top:1px solid var(--border-color); padding-top:0.5rem; display:flex; justify-content:space-between; align-items:center;">
                     <button class="btn icon-btn text-danger" onclick="event.stopPropagation(); deleteOrderPermanently('${order.id}')" title="O'chirish"><i class="fas fa-trash"></i></button>
-                    <span>Umumiy: $${order.total.toFixed(2)}</span>
+                    <span>Umumiy: ${order.total.toFixed(2)} so'm</span>
                 </div>
             </div>`;
     });
@@ -587,7 +587,7 @@ function renderWaiterMyOrders() {
     const totalOrdersEl = document.getElementById('waiter-my-total-orders');
     const totalIncomeEl = document.getElementById('waiter-my-total-income');
     if(totalOrdersEl) totalOrdersEl.textContent = dateFilteredOrders.length;
-    if(totalIncomeEl) totalIncomeEl.textContent = `$${completedOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2)}`;
+    if(totalIncomeEl) totalIncomeEl.textContent = `${completedOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2)} so'm`;
 
     let filteredOrders = dateFilteredOrders;
     if (waiterMyStatusFilter !== 'all') {
@@ -615,7 +615,7 @@ function renderWaiterMyOrders() {
                             <strong style="font-size: 1.3rem;">Stol ${o.table}</strong>
                             <div style="display:flex; align-items:center;">
                                 <span class="badge" style="background: ${statusColor}; color: white; margin-right: 0.5rem; padding: 0.4rem 0.8rem; font-size: 0.9rem;">${statusText}</span>
-                                <span style="color:var(--success-color); font-weight:bold; font-size: 1.3rem;">$${o.total.toFixed(2)}</span>
+                                <span style="color:var(--success-color); font-weight:bold; font-size: 1.3rem;">${o.total.toFixed(2)} so'm</span>
                             </div>
                         </div>
                         <p style="font-size:1rem; color:var(--text-secondary); margin-bottom:0.75rem; line-height: 1.5;">${itemsHtml}</p>
@@ -660,7 +660,7 @@ function renderUserStatsOrders() {
     // Total income calculation always includes only ready/completed for real income
     const completedOrders = dateFilteredOrders.filter(o => o.status === 'ready' || o.status === 'completed');
     document.getElementById('stats-total-orders').textContent = dateFilteredOrders.length;
-    document.getElementById('stats-total-income').textContent = `$${completedOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2)}`;
+    document.getElementById('stats-total-income').textContent = `${completedOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2)} so'm`;
 
     let filteredOrders = dateFilteredOrders;
     if (currentStatsFilter !== 'all') {
@@ -688,7 +688,7 @@ function renderUserStatsOrders() {
                             <strong style="font-size: 1.1rem;">Stol ${o.table}</strong>
                             <div style="display:flex; align-items:center;">
                                 <span class="badge" style="background: ${statusColor}; color: white; margin-right: 0.5rem;">${statusText}</span>
-                                <span style="color:var(--success-color); font-weight:bold; font-size: 1.1rem; margin-right: 0.5rem;">$${o.total.toFixed(2)}</span>
+                                <span style="color:var(--success-color); font-weight:bold; font-size: 1.1rem; margin-right: 0.5rem;">${o.total.toFixed(2)} so'm</span>
                                 <button class="btn icon-btn danger-btn" style="padding: 0.2rem 0.4rem; font-size: 0.8rem; height: auto;" onclick="event.stopPropagation(); deleteOrderPermanently('${o.id}')" title="O'chirish"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
@@ -818,7 +818,7 @@ function renderChefDashboard() {
     if (el1) el1.textContent = pendingOrders.length;
     if (el2) el2.textContent = preparingOrders.length;
     if (el3) el3.textContent = readyOrders.length;
-    if (el4) el4.textContent = `$${readyOrders.reduce((s,o)=>s+o.total,0).toFixed(2)}`;
+    if (el4) el4.textContent = `${readyOrders.reduce((s,o)=>s+o.total,0).toFixed(2)} so'm`;
 
     const container = document.getElementById('chef-orders-container');
     if (!container) return;
@@ -951,7 +951,7 @@ function renderWaiterOrders() {
     waiterOrders.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
     
     container.innerHTML = `<div style="grid-column: 1/-1; background: var(--success-color); color: white; padding: 1rem; border-radius: var(--radius-md); text-align: center; margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);">
-        <h3 style="margin: 0; font-size: 1.25rem;">Umumiy Daromadim: $${totalIncome.toFixed(2)}</h3>
+        <h3 style="margin: 0; font-size: 1.25rem;">Umumiy Daromadim: ${totalIncome.toFixed(2)} so'm</h3>
         <p style="margin: 0.25rem 0 0 0; opacity: 0.9;">Jami bajarilgan va kutilayotgan buyurtmalar soni: ${waiterOrders.length} ta</p>
     </div>`;
     
@@ -974,7 +974,7 @@ function renderWaiterOrders() {
                 <div class="order-header"><h3>Stol ${order.table}</h3>${statusBadge}</div>
                 <div class="order-meta">
                     <span><i class="fas fa-clock"></i> ${new Date(order.timestamp).toLocaleString()}</span>
-                    <span><i class="fas fa-dollar-sign"></i> Jami: $${order.total.toFixed(2)}</span>
+                    <span><i class="fas fa-dollar-sign"></i> Jami: ${order.total.toFixed(2)} so'm</span>
                     ${customerHtml}
                 </div>
                 <ul class="order-items-list" style="margin-top:0.5rem; max-height:100px; overflow-y:auto;">${itemsHtml}</ul>
@@ -993,7 +993,7 @@ function renderWaiterMenu() {
         container.innerHTML += `
             <div class="menu-item" onclick="addToCart(${item.id})">
                 <div class="menu-item-icon">${iconHtml}</div>
-                <h4>${item.name}</h4><div class="price">$${item.price.toFixed(2)}</div>
+                <h4>${item.name}</h4><div class="price">${item.price.toFixed(2)} so'm</div>
             </div>`;
     });
 }
@@ -1048,7 +1048,7 @@ function renderCart() {
             <div class="cart-item">
                 <div class="cart-item-info">
                     <span class="cart-item-name">${item.name}</span>
-                    <span class="cart-item-price">$${itemTotal.toFixed(2)} ($${item.price}/dona)</span>
+                    <span class="cart-item-price">${itemTotal.toFixed(2)} so'm (${item.price} so'm/dona)</span>
                 </div>
                 <div class="cart-item-actions">
                     <button class="qty-btn" onclick="updateCartQty(${item.id}, -1)">-</button>
@@ -1057,7 +1057,7 @@ function renderCart() {
                 </div>
             </div>`;
     });
-    totalEl.textContent = `$${total.toFixed(2)}`;
+    totalEl.textContent = `${total.toFixed(2)} so'm`;
     submitBtn.disabled = false;
 }
 
@@ -1365,7 +1365,7 @@ window.renderChefMyOrders = function() {
                             <strong style="font-size: 1.3rem;">Stol ${o.table}</strong>
                             <div style="display:flex; align-items:center;">
                                 <span class="badge" style="background: ${statusColor}; color: white; margin-right: 0.5rem; padding: 0.4rem 0.8rem; font-size: 0.9rem;">${statusText}</span>
-                                <span style="color:var(--success-color); font-weight:bold; font-size: 1.3rem;">$${o.total.toFixed(2)}</span>
+                                <span style="color:var(--success-color); font-weight:bold; font-size: 1.3rem;">${o.total.toFixed(2)} so'm</span>
                             </div>
                         </div>
                         <p style="font-size:1rem; color:var(--text-secondary); margin-bottom:0.75rem; line-height: 1.5;">${itemsHtml}</p>
