@@ -114,9 +114,17 @@ function showDashboard(role) {
 }
 
 function updateDashboards(role, renderChartAnim = false) {
-    if (role === 'admin') renderAdminDashboard(renderChartAnim);
-    else if (role === 'chef') renderChefDashboard();
-    else if (role === 'waiter') renderWaiterDashboard();
+    if (role === 'admin') {
+        renderMenuAdmin();
+        renderStaff();
+        renderCategories();
+    } else if (role === 'chef') {
+        renderChefOrders();
+    } else if (role === 'waiter') {
+        renderCategories();
+        renderMenu();
+        renderWaiterMyOrders();
+    }
 }
 
 function showToast(message, type = 'info') {
@@ -477,6 +485,125 @@ window.filterUserStatsOrders = function(status) {
     });
     renderUserStatsOrders();
 };
+
+// Waiter Filters
+let waiterCategoryFilter = 'all';
+
+window.filterMenu = function(cat) {
+    waiterCategoryFilter = cat;
+    document.querySelectorAll('#waiter-menu-filters .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.category === cat) btn.classList.add('active');
+    });
+    renderMenu();
+};
+
+let waiterMyDateFilterType = 'all';
+let waiterMyDateFilterValue = null;
+let waiterMyStatusFilter = 'all';
+
+window.filterWaiterMyDate = function(type, value = null) {
+    waiterMyDateFilterType = type;
+    waiterMyDateFilterValue = value;
+    
+    document.querySelectorAll('#waiter-my-date-filters .filter-btn').forEach(btn => btn.classList.remove('active'));
+    
+    if (type === 'all') {
+        document.querySelector('#waiter-my-date-filters button[data-date="all"]').classList.add('active');
+        document.getElementById('waiter-my-exact-date').value = '';
+        document.getElementById('waiter-my-exact-month').value = '';
+    } else if (type === 'exact-date') {
+        document.getElementById('waiter-my-exact-date').classList.add('active');
+        document.getElementById('waiter-my-exact-month').value = '';
+        document.querySelector('#waiter-my-date-filters button[data-date="all"]').classList.remove('active');
+    } else if (type === 'exact-month') {
+        document.getElementById('waiter-my-exact-month').classList.add('active');
+        document.getElementById('waiter-my-exact-date').value = '';
+        document.querySelector('#waiter-my-date-filters button[data-date="all"]').classList.remove('active');
+    }
+    
+    renderWaiterMyOrders();
+};
+
+window.filterWaiterMyOrders = function(status) {
+    waiterMyStatusFilter = status;
+    document.querySelectorAll('#waiter-my-order-filters .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if(btn.dataset.status === status) btn.classList.add('active');
+    });
+    renderWaiterMyOrders();
+};
+
+function renderWaiterMyOrders() {
+    if (!currentUser || currentUser.role !== 'waiter') return;
+    
+    let myOrders = state.orders.filter(o => o.waiterId === currentUser.login);
+    
+    // Apply Date Filter
+    let dateFilteredOrders = myOrders;
+    
+    if (waiterMyDateFilterType === 'exact-date' && waiterMyDateFilterValue) {
+        dateFilteredOrders = myOrders.filter(o => {
+            const d = new Date(o.timestamp);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const localDateStr = `${yyyy}-${mm}-${dd}`;
+            return localDateStr === waiterMyDateFilterValue;
+        });
+    } else if (waiterMyDateFilterType === 'exact-month' && waiterMyDateFilterValue) {
+        dateFilteredOrders = myOrders.filter(o => {
+            const d = new Date(o.timestamp);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const localMonthStr = `${yyyy}-${mm}`;
+            return localMonthStr === waiterMyDateFilterValue;
+        });
+    }
+
+    // Total income calculation
+    const completedOrders = dateFilteredOrders.filter(o => o.status === 'ready' || o.status === 'completed');
+    const totalOrdersEl = document.getElementById('waiter-my-total-orders');
+    const totalIncomeEl = document.getElementById('waiter-my-total-income');
+    if(totalOrdersEl) totalOrdersEl.textContent = dateFilteredOrders.length;
+    if(totalIncomeEl) totalIncomeEl.textContent = `$${completedOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2)}`;
+
+    let filteredOrders = dateFilteredOrders;
+    if (waiterMyStatusFilter !== 'all') {
+        filteredOrders = dateFilteredOrders.filter(o => o.status === waiterMyStatusFilter);
+    }
+    
+    const container = document.getElementById('waiter-orders-container');
+    if(container) {
+        container.innerHTML = '';
+        if(filteredOrders.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:var(--text-secondary); width: 100%; margin-top: 2rem;">Zakazlar mavjud emas.</p>';
+        } else {
+            filteredOrders.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+            filteredOrders.forEach(o => {
+                let itemsHtml = o.items.map(i => `<b>${i.qty}x</b> ${i.name}`).join(', ');
+                let statusColor = 'var(--primary-color)';
+                let statusText = 'Yangi';
+                if(o.status === 'ready') { statusColor = 'var(--success-color)'; statusText = 'Tayyor'; }
+                else if(o.status === 'cancelled') { statusColor = 'var(--danger-color)'; statusText = 'Bekor'; }
+                else if(o.status === 'preparing') { statusColor = 'var(--warning-color)'; statusText = 'Jarayonda'; }
+                
+                container.innerHTML += `
+                    <div style="background: white; padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1rem; border-left: 5px solid ${statusColor}; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 0.75rem; align-items: center;">
+                            <strong style="font-size: 1.3rem;">Stol ${o.table}</strong>
+                            <div style="display:flex; align-items:center;">
+                                <span class="badge" style="background: ${statusColor}; color: white; margin-right: 0.5rem; padding: 0.4rem 0.8rem; font-size: 0.9rem;">${statusText}</span>
+                                <span style="color:var(--success-color); font-weight:bold; font-size: 1.3rem;">$${o.total.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <p style="font-size:1rem; color:var(--text-secondary); margin-bottom:0.75rem; line-height: 1.5;">${itemsHtml}</p>
+                        <small style="color:var(--text-secondary); font-size:0.85rem;"><i class="fas fa-clock mr-2"></i> ${new Date(o.timestamp).toLocaleString()}</small>
+                    </div>`;
+            });
+        }
+    }
+}
 
 function renderUserStatsOrders() {
     if (!currentUserStatsId) return;

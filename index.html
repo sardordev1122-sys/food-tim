@@ -426,7 +426,34 @@
                 <header class="waiter-header">
                     <h2>Mening Zakazlarim</h2>
                 </header>
-                <div class="orders-grid" id="waiter-orders-container" style="margin-top: 1rem; padding-bottom: 2rem;">
+                
+                <!-- Quick Info -->
+                <div style="display: flex; justify-content: space-around; background: white; border-radius: var(--radius-md); padding: 1rem; margin-top: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <div style="text-align: center; flex: 1; border-right: 1px solid var(--border-color);">
+                        <small style="color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Jami Zakazlar</small>
+                        <strong id="waiter-my-total-orders" style="font-size: 1.5rem; color: var(--text-primary);">0</strong>
+                    </div>
+                    <div style="text-align: center; flex: 1;">
+                        <small style="color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Daromad</small>
+                        <strong id="waiter-my-total-income" style="font-size: 1.5rem; color: var(--success-color);">$0.00</strong>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-top: 1.5rem; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <div class="menu-filters" style="margin: 0; display: flex; gap: 0.5rem; align-items: center;" id="waiter-my-date-filters">
+                        <button class="filter-btn active" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-date="all" onclick="filterWaiterMyDate('all')">Umumiy</button>
+                        <input type="date" id="waiter-my-exact-date" class="filter-btn" style="padding: 0.15rem 0.5rem; font-size: 0.8rem;" onchange="filterWaiterMyDate('exact-date', this.value)">
+                        <input type="month" id="waiter-my-exact-month" class="filter-btn" style="padding: 0.15rem 0.5rem; font-size: 0.8rem;" onchange="filterWaiterMyDate('exact-month', this.value)">
+                    </div>
+                    <div class="menu-filters" style="margin: 0;" id="waiter-my-order-filters">
+                        <button class="filter-btn active" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-status="all" onclick="filterWaiterMyOrders('all')">Hammasi</button>
+                        <button class="filter-btn" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-status="ready" onclick="filterWaiterMyOrders('ready')">Tugatilgan</button>
+                        <button class="filter-btn" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-status="cancelled" onclick="filterWaiterMyOrders('cancelled')">Bekor</button>
+                    </div>
+                </div>
+
+                <div id="waiter-orders-container" style="padding-bottom: 2rem;">
                     <!-- Orders injected via JS -->
                 </div>
             </div>
@@ -526,7 +553,7 @@
 
     <!-- Admin: Staff Stats Modal -->
     <div id="user-stats-modal" class="modal">
-        <div class="modal-content glass-panel" style="max-width: 650px; padding: 0; overflow: hidden;">
+        <div class="modal-content glass-panel" style="max-width: 650px; padding: 0;">
             <span class="close-modal" onclick="closeModal('user-stats-modal')" style="z-index: 10; color: white; right: 1rem; top: 1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">&times;</span>
             
             <!-- Header Background & Avatar -->
