@@ -421,6 +421,15 @@
                     <!-- Items -->
                 </div>
             </div>
+            
+            <div id="waiter-view-orders" class="waiter-subview">
+                <header class="waiter-header">
+                    <h2>Mening Zakazlarim</h2>
+                </header>
+                <div class="orders-grid" id="waiter-orders-container" style="margin-top: 1rem; padding-bottom: 2rem;">
+                    <!-- Orders injected via JS -->
+                </div>
+            </div>
         </main>
     </section>
 
@@ -567,8 +576,12 @@
                 </div>
                 
                 <!-- Filters for Orders -->
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;">
-                    <h4 style="margin: 0; font-size: 1.1rem;"><i class="fas fa-history text-secondary mr-2"></i>Zakazlar Tarixi</h4>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <div class="menu-filters" style="margin: 0;" id="stats-date-filters">
+                        <button class="filter-btn active" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-date="all" onclick="filterUserStatsDate('all')">Umumiy</button>
+                        <button class="filter-btn" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-date="today" onclick="filterUserStatsDate('today')">Bugun</button>
+                        <button class="filter-btn" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-date="month" onclick="filterUserStatsDate('month')">Shu oy</button>
+                    </div>
                     <div class="menu-filters" style="margin: 0;" id="stats-order-filters">
                         <button class="filter-btn active" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-status="all" onclick="filterUserStatsOrders('all')">Hammasi</button>
                         <button class="filter-btn" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" data-status="ready" onclick="filterUserStatsOrders('ready')">Tugatilgan</button>
@@ -576,7 +589,7 @@
                     </div>
                 </div>
 
-                <div id="stats-orders-list" style="max-height: 250px; overflow-y: auto; text-align: left; padding-right: 0.5rem; margin-top: 1rem;">
+                <div id="stats-orders-list" style="max-height: 250px; overflow-y: auto; text-align: left; padding-right: 0.5rem; margin-top: 1rem; margin-bottom: 1rem;">
                     <!-- Orders will be injected here -->
                 </div>
             </div>

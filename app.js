@@ -429,6 +429,7 @@ window.deleteUser = async function(id) {
 
 let currentUserStatsId = null;
 let currentStatsFilter = 'all';
+let currentStatsDateFilter = 'all';
 
 window.viewUserStats = function(id) {
     currentUserStatsId = id;
@@ -450,9 +451,23 @@ window.viewUserStats = function(id) {
     document.querySelector('#stats-order-filters .filter-btn[data-status="all"]').classList.add('active');
     currentStatsFilter = 'all';
 
+    document.querySelectorAll('#stats-date-filters .filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('#stats-date-filters .filter-btn[data-date="all"]').classList.add('active');
+    currentStatsDateFilter = 'all';
+
     renderUserStatsOrders();
     document.getElementById('user-stats-modal').classList.add('active');
 };
+
+window.filterUserStatsDate = function(dateFilter) {
+    currentStatsDateFilter = dateFilter;
+    document.querySelectorAll('#stats-date-filters .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if(btn.dataset.date === dateFilter) btn.classList.add('active');
+    });
+    renderUserStatsOrders();
+};
+
 
 window.filterUserStatsOrders = function(status) {
     currentStatsFilter = status;
@@ -472,14 +487,29 @@ function renderUserStatsOrders() {
     if (user.role === 'waiter') allUserOrders = state.orders.filter(o => o.waiterId === user.login);
     else if (user.role === 'chef') allUserOrders = state.orders.filter(o => o.chefId === user.id);
     
+    // Apply Date Filter
+    let dateFilteredOrders = allUserOrders;
+    const now = new Date();
+    if (currentStatsDateFilter === 'today') {
+        dateFilteredOrders = allUserOrders.filter(o => {
+            const d = new Date(o.timestamp);
+            return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        });
+    } else if (currentStatsDateFilter === 'month') {
+        dateFilteredOrders = allUserOrders.filter(o => {
+            const d = new Date(o.timestamp);
+            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        });
+    }
+
     // Total income calculation always includes only ready/completed for real income
-    const completedOrders = allUserOrders.filter(o => o.status === 'ready' || o.status === 'completed');
-    document.getElementById('stats-total-orders').textContent = allUserOrders.length;
+    const completedOrders = dateFilteredOrders.filter(o => o.status === 'ready' || o.status === 'completed');
+    document.getElementById('stats-total-orders').textContent = dateFilteredOrders.length;
     document.getElementById('stats-total-income').textContent = `$${completedOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2)}`;
 
-    let filteredOrders = allUserOrders;
+    let filteredOrders = dateFilteredOrders;
     if (currentStatsFilter !== 'all') {
-        filteredOrders = allUserOrders.filter(o => o.status === currentStatsFilter);
+        filteredOrders = dateFilteredOrders.filter(o => o.status === currentStatsFilter);
     }
     
     const container = document.getElementById('stats-orders-list');
@@ -668,14 +698,25 @@ function renderChefDashboard() {
     });
 }
 
+let previousReadyCount = 0;
+
 function checkAudioAlert() {
-    if (!currentUser || currentUser.role !== 'chef') return;
-    const pendingCount = state.orders.filter(o => o.status === 'pending').length;
-    if (pendingCount > previousPendingCount) {
-        alertAudio.play().catch(()=>{});
-        showToast("Yangi Zakaz keldi!", "warning");
+    if (!currentUser) return;
+    if (currentUser.role === 'chef') {
+        const pendingCount = state.orders.filter(o => o.status === 'pending').length;
+        if (pendingCount > previousPendingCount) {
+            alertAudio.play().catch(()=>{});
+            showToast("Yangi Zakaz keldi!", "warning");
+        }
+        previousPendingCount = pendingCount;
+    } else if (currentUser.role === 'waiter') {
+        const readyCount = state.orders.filter(o => o.waiterId === currentUser.login && o.status === 'ready').length;
+        if (readyCount > previousReadyCount) {
+            alertAudio.play().catch(()=>{});
+            showToast("Buyurtma Tayyor bo'ldi!", "success");
+        }
+        previousReadyCount = readyCount;
     }
-    previousPendingCount = pendingCount;
 }
 
 window.updateOrderStatus = async function(orderId, newStatus) {
